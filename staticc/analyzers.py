@@ -20,3 +20,11 @@ class Analyzer(_GenericAnalyzer[ast.AST, ResultT]):
 
     def analyze(self, node: ast.AST) -> ResultT:
         raise NotImplementedError
+
+
+@dataclass
+class TreeAnalyzer(_GenericAnalyzer[ast.Module, ResultT]):
+    """A tree level analyzer that only accepts a module as its input."""
+
+    def analyze(self, node: ast.Module) -> ResultT:
+        raise NotImplementedError
