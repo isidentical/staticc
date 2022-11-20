@@ -36,7 +36,7 @@ class ChangeType(Enum):
 
 
 @dataclass
-class ChangeSet:
+class PartialChange:
     change_type: ChangeType
     original_node: Any
     new_node: Any
@@ -54,16 +54,16 @@ def _incomplete_if(condition: bool) -> None:
         raise IncompleteASTError
 
 
-def _change_if(condition: bool, *args: Any, **kwargs: Any) -> Iterator[ChangeSet]:
+def _change_if(condition: bool, *args: Any, **kwargs: Any) -> Iterator[PartialChange]:
     if condition:
-        yield ChangeSet(*args, **kwargs)
+        yield PartialChange(*args, **kwargs)
         raise _Continue
 
 
-def ast_delta(baseline: ast.AST, new_node: ast.AST) -> Iterator[ChangeSet]:
+def ast_delta(baseline: ast.AST, new_node: ast.AST) -> Iterator[PartialChange]:
     baseline_type = type(baseline)
     if baseline_type is not type(new_node):
-        yield ChangeSet(ChangeType.FULL, baseline, new_node)
+        yield PartialChange(ChangeType.FULL, baseline, new_node)
         return None
 
     for field in baseline_type._fields:
@@ -114,13 +114,13 @@ def _ast_sequence_delta(
     baseline: ast.AST,
     new_node: ast.AST,
     field: str,
-) -> Iterator[ChangeSet]:
+) -> Iterator[PartialChange]:
     base_sequence: list[Any] = getattr(baseline, field)
     new_sequence: list[Any] = getattr(new_node, field)
 
     # TODO: distinguish insertions to the start and the end
     if len(base_sequence) != len(new_sequence):
-        yield ChangeSet(ChangeType.FIELD_SIZE, baseline, new_node, on_field=field)
+        yield PartialChange(ChangeType.FIELD_SIZE, baseline, new_node, on_field=field)
         return None
 
     for index, (base_item, new_item) in enumerate(zip(base_sequence, new_sequence)):
