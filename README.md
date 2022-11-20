@@ -1,3 +1,3 @@
 # Staticc
 
-TBD
+Static analysis toolkit for Python AST.
